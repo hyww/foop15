@@ -15,6 +15,9 @@ public class PlayGame{
 		System.out.println("Drop cards");
 		for(int i = 0 ; i < 4 ; i++) player[i].drop();
 		System.out.println("Game start");
+		if(player[0].won(1, player[1].win())){
+			System.out.println("Basic Game Over");
+		}
 		for(int i = 0 ; i < 10 ; i++){
 			player[i%4].draw(player[(i+1)%4].drawn(), (i+1)%4);
 		}
@@ -121,5 +124,20 @@ class Player{
 		String drawnCard = cards[drawn];
 		cards[drawn] = null;
 		return drawnCard;
+	}
+	public boolean win(){
+		return cards[0] == null;
+	}
+	public boolean won(int i, boolean b){
+		if(win()&&b){
+			int a = id<i?id:i;
+			int c = id<i?i:id;
+			System.out.println("Player"+a+" and Player"+c+" win");
+		}
+		else if(b)
+			System.out.println("Player"+i+" wins");
+		else if(win())
+			System.out.println("Player"+id+" wins");
+		return win()||b;
 	}
 }
