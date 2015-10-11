@@ -16,10 +16,19 @@ public class PlayGame{
 		for(int i = 0 ; i < 4 ; i++) player[i].drop();
 		System.out.println("Game start");
 		if(player[0].won(1, player[1].win())){
-			System.out.println("Basic Game Over");
+			System.out.println("Basic game over");
 		}
-		for(int i = 0 ; i < 10 ; i++){
-			player[i%4].draw(player[(i+1)%4].drawn(), (i+1)%4);
+		else{
+			int i = 0;
+			while(true){
+				player[i%4].draw(player[(i+1)%4].drawn(), (i+1)%4);
+				player[i%4].print();
+				player[(i+1)%4].print();
+				if(player[i%4].won((i+1)%4, player[(i+1)%4].win())){
+					System.out.println("Basic game over");
+					break;
+				}
+			}
 		}
 	}
 }
