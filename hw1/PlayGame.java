@@ -15,20 +15,36 @@ public class PlayGame{
 		System.out.println("Drop cards");
 		for(int i = 0 ; i < 4 ; i++) player[i].drop();
 		System.out.println("Game start");
+		int i = 0;
 		if(player[0].won(1, player[1].win())){
 			System.out.println("Basic game over");
 		}
 		else{
-			int i = 0;
 			while(true){
 				player[i%4].draw(player[(i+1)%4].drawn(), (i+1)%4);
-				player[i%4].print();
-				player[(i+1)%4].print();
+				player[i%4].drop();
+				player[(i+1)%4].drop();
 				if(player[i%4].won((i+1)%4, player[(i+1)%4].win())){
 					System.out.println("Basic game over");
+					i++;
 					break;
 				}
+				i++;
 			}
+		}
+		System.out.println("Continue");
+		while(true){
+			while(player[i%4].out)i++;
+			int j = i + 1;
+			while(player[j%4].out)j++;
+			if(i%4 == j%4){
+				System.out.println("Bonus game over");
+				break;
+			}
+			player[i%4].draw(player[j%4].drawn(), j%4);
+			player[i%4].drop();
+			player[j%4].drop();
+			player[i%4].won(j%4, player[j%4].win());
 		}
 	}
 }
@@ -65,10 +81,12 @@ class Player{
 	private static String[] ranks = {"0", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A"};
 	private String[] cards;
 	private int id;
+	public boolean out;
 	public Player(int i){
 		id = i;
 	}
 	public void init(String[] dealtCards){
+		out = false;
 		cards = new String[15];
 		System.arraycopy(dealtCards, 0, cards, 0, dealtCards.length);
 		print();
@@ -94,9 +112,14 @@ class Player{
 		});
 	}
 	public void drop(){
+		sort();
 		int i = 0;
 		while(i + 1 < 15 && cards[i+1] != null){
 			int j = i + 1;
+			if(cards[i].substring(1).equals("0")){
+				i++;
+				continue;
+			}
 			while(j < cards.length && cards[j] != null && cards[j].substring(1).equals(cards[i].substring(1)))j++;
 			//System.out.println(id+" "+cards[i]+" "+cards[j]);
 			switch(j-i){
@@ -135,7 +158,11 @@ class Player{
 		return drawnCard;
 	}
 	public boolean win(){
-		return cards[0] == null;
+		if(cards[0] == null){
+			out = true;
+			return true;
+		}
+		return false;
 	}
 	public boolean won(int i, boolean b){
 		if(win()&&b){
