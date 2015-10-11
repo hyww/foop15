@@ -2,6 +2,7 @@ import java.lang.*;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Random;
 public class PlayGame{
 
 	public static void main(String [] argv){
@@ -14,6 +15,9 @@ public class PlayGame{
 		System.out.println("Drop cards");
 		for(int i = 0 ; i < 4 ; i++) player[i].drop();
 		System.out.println("Game start");
+		for(int i = 0 ; i < 10 ; i++){
+			player[i%4].draw(player[(i+1)%4].drawn(), (i+1)%4);
+		}
 	}
 }
 
@@ -53,7 +57,8 @@ class Player{
 		id = i;
 	}
 	public void init(String[] dealtCards){
-		cards = dealtCards;
+		cards = new String[15];
+		System.arraycopy(dealtCards, 0, cards, 0, dealtCards.length);
 		print();
 	}
 	public void print(){
@@ -78,8 +83,7 @@ class Player{
 	}
 	public void drop(){
 		int i = 0;
-		while(i < cards.length - 1){
-			if(cards[i]==null)continue;
+		while(i + 1 < 15 && cards[i+1] != null){
 			int j = i + 1;
 			while(j < cards.length && cards[j] != null && cards[j].substring(1).equals(cards[i].substring(1)))j++;
 			//System.out.println(id+" "+cards[i]+" "+cards[j]);
@@ -99,5 +103,23 @@ class Player{
 			i = j;
 		}
 		print();
+	}
+	public void draw(String card, int from){
+		System.out.println("Player"+id+" draws a card from Player"+from+" "+card);
+		for(int i = 0 ; i < cards.length ; i++){
+			if(cards[i] == null){
+				cards[i] = card;
+				break;
+			}
+		}
+	}
+	public String drawn(){
+		Random rand = new Random();
+		int length = 0;
+		while(cards[length]!=null)length++;
+		int drawn = rand.nextInt(length);
+		String drawnCard = cards[drawn];
+		cards[drawn] = null;
+		return drawnCard;
 	}
 }
