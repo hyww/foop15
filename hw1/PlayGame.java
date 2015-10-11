@@ -4,7 +4,9 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Random;
 public class PlayGame{
-
+	/**	Play the game.
+	*	main function is here.
+	*/
 	public static void main(String [] argv){
 		Dealer dealer = new Dealer();
 		Player[] player = new Player[]{new Player(0), new Player(1), new Player(2), new Player(3)};
@@ -74,7 +76,6 @@ class Dealer{
 		return Arrays.copyOfRange(cards, start, dealt);
 	}
 }
-
 
 class Player{
 	private static String[] suits = {"C", "D", "H", "S", "R", "B"};
