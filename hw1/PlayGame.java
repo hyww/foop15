@@ -1,0 +1,103 @@
+import java.lang.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+public class PlayGame{
+
+	public static void main(String [] argv){
+		Dealer dealer = new Dealer();
+		Player[] player = new Player[]{new Player(0), new Player(1), new Player(2), new Player(3)};
+		player[0].init(dealer.deal(14));
+		player[1].init(dealer.deal(14));
+		player[2].init(dealer.deal(13));
+		player[3].init(dealer.deal(13));
+		System.out.println("Drop cards");
+		for(int i = 0 ; i < 4 ; i++) player[i].drop();
+		System.out.println("Game start");
+	}
+}
+
+class Dealer{
+	private static String[] suits = {"C", "D", "H", "S"};
+	private static String[] ranks = {"A", "K", "Q", "J", "10", "9", "8", "7", "6", "5", "4", "3", "2"};
+	private String[] cards;
+	private int dealt;
+	public Dealer(){
+		cards = new String [54];
+		cards[0] = "R0";
+		cards[1] = "B0";
+		int i = 2;
+		for (String s: suits){
+			for (String r: ranks){
+				cards[i] = s + r;
+				i++;
+			}
+		}
+		Collections.shuffle(Arrays.asList(cards));
+		System.out.println("Deal cards");
+	}
+	public String[] deal(int n){
+		int start = dealt;
+		dealt+= n;
+		return Arrays.copyOfRange(cards, start, dealt);
+	}
+}
+
+
+class Player{
+	private static String[] suits = {"C", "D", "H", "S", "R", "B"};
+	private static String[] ranks = {"0", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A"};
+	private String[] cards;
+	private int id;
+	public Player(int i){
+		id = i;
+	}
+	public void init(String[] dealtCards){
+		cards = dealtCards;
+		print();
+	}
+	public void print(){
+		sort();
+		System.out.print("Player"+id+":");
+		for (String s: cards){
+			if(s==null)break;
+			System.out.print(" "+s);
+		}
+		System.out.println();
+	}
+	public void sort(){
+		Arrays.sort(cards, new Comparator<String>() {
+			public int compare(String s1, String s2) {
+				if(s1 == null)return 1;
+				if(s2 == null)return -1;
+				int i1 = Arrays.asList(ranks).indexOf(s1.substring(1));
+				int i2 = Arrays.asList(ranks).indexOf(s2.substring(1));
+				return (i1 - i2 == 0)?Arrays.asList(suits).indexOf(s1.substring(0,1))-Arrays.asList(suits).indexOf(s2.substring(0,1)):i1-i2;
+			}
+		});
+	}
+	public void drop(){
+		int i = 0;
+		while(i < cards.length - 1){
+			if(cards[i]==null)continue;
+			int j = i + 1;
+			while(j < cards.length && cards[j] != null && cards[j].substring(1).equals(cards[i].substring(1)))j++;
+			//System.out.println(id+" "+cards[i]+" "+cards[j]);
+			switch(j-i){
+				case 1:
+					i++;
+					break;
+				case 4:
+					cards[i+3] = null;
+					cards[i+2] = null;
+				case 3:
+				case 2:
+					cards[i] = null;
+					cards[i+1] = null;
+					break;
+			}
+			i = j;
+		}
+		print();
+	}
+}
