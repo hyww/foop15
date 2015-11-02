@@ -1,4 +1,4 @@
 All:
 	javac ./src/POOCasino.java ./src/Shuffler.java
 clean:
-	rm *.class
+	rm ./src/*.class
