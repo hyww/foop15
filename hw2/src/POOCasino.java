@@ -4,7 +4,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 
 class Setting {
-	public static boolean auto=true;
+	public static boolean auto=false;
 	public static boolean art=true;
 }
 class Art{
@@ -121,6 +121,7 @@ public class POOCasino{
 		Computer.shuffleDeck();
 		int bet = Player.getBet(n);
 		if(bet == 0)return false;
+		Computer.setP(Computer.getP()-bet);
 		Card[] desk = Computer.finalDesk(Player.chooseCard(Computer.initDesk()));
 		Player.result(desk, Computer.bestHand(), bet);
 		Art.pressContinue();
