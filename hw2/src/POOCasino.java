@@ -94,6 +94,7 @@ public class POOCasino{
 	*/
 	private static String name;
 	public static void main(String [] argv){
+		if(argv.length>0&&argv[0].equals("-t"))Setting.art=false;
 		int n;
 		gameStart();
 		for(n=1;round(n);n++){}
