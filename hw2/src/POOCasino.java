@@ -4,8 +4,89 @@ import java.util.Arrays;
 import java.util.Comparator;
 
 class Setting {
-	public static boolean auto=false;
-	public static boolean asciiart=true;
+	public static boolean auto=true;
+	public static boolean art=true;
+}
+class Art{
+	private static String[][] title={{
+	"◢██◣ ◢██◣ ◢██◣ ◢██◣",
+	"█    █ █    █ █    █ █                        ◆",
+	"███◤ █    █ █    █ █       ◢█◣   ◢█◣     █◣█◢█◣",
+	"█       █    █ █    █ █       █  █   ◥█◣  █ ████  █",
+	"█       ◥██◤ ◥██◤ ◥██◤ ◥██◣ ◥▎◤  █ █◥█◥█◤"
+	},{
+	"╚╦═       ║                  ╔╗",
+	"  ║ ╔╗╔═╠╝╔╗  ╔╗║╔  ╠╝╗╔╗ ╩ ╩ ╔╗║╔",
+	"  ║ ║║║  ╠╗╚╗  ║║╠╝  ║  ║╠╝ ║ ║ ╠╝╠╝",
+	"╚╝ ╚╩╚═║╚╚╝  ╚╝║    ╚═╝╚═ ╚ ╚ ╚═║"
+	}};
+	public static String[] suits={
+		"\033[0;30;47m♣",
+		"\033[0;31;47m♦ ",
+		"\033[0;31;47m♥",
+		"\033[0;30;47m♠"
+	};
+	public static String[] hands={
+		"\033[1;35mmroyal flush\033[1;37;40m",
+		"\033[1;33mstraight flushi\033[1;37;40m",
+		"\033[1;32mfour of a kind\033[1;37;40m",
+		"\033[1;36mfull house\033[1;37;40m",
+		"\033[1;34mflush\033[1;37;40m",
+		"\033[1;31mstraight\033[1;37;40m",
+		"\033[1;37mthree of a kind\033[1;37;40m",
+		"\033[0;36mtwo pair\033[1;37;40m",
+		"\033[0;33mJacks or better\033[1;37;40m",
+		"\033[0;37mothers\033[1;37;40m"};
+	public static void move(int x, int y){
+		if(!Setting.art)return;
+		System.out.print("\033["+y+";"+x+"H");
+	}
+	public static void color(int a, int b, int c){
+		if(!Setting.art) return;
+		System.out.print("\033["+a+";"+b+";"+c+"m");
+	}
+	public static void clear(){
+		System.out.print("\033[J");
+	}
+	public static void title(){
+		int x,y;
+		if(Setting.art){
+			move(1,1);
+			clear();
+			x=1; y=1;
+			color(1,31,40);
+			for(int i=0 ; i<title[0].length; i++){
+				move(x, y+i);
+				System.out.println(title[0][i]);
+			}
+			x=7; y=7;
+			color(1,37,40);
+			for(int i=0 ; i<title[1].length; i++){
+				move(x, y+i);
+				System.out.println(title[1][i]);
+			}
+		}
+		else	
+			System.out.print("POOCasino Jacks or Better, ");
+	}
+	public static void input(int n){
+		if(!Setting.art) return;
+		color(0,30,47);
+		System.out.print("\033[s");
+		for(int i=0 ; i<n ; i++)
+			System.out.print(" ");
+		System.out.print("\033[u");
+	}
+	public static void pressContinue(){
+		if(Setting.auto||!Setting.art) return;
+		color(0,30,46);
+		System.out.print("Press Enter to continue.");
+		color(1,37,40);
+		try{
+			System.in.read();
+		}
+		catch(Exception e){}
+	}
 }
 public class POOCasino{
 	/**	Play the game.
@@ -19,24 +100,37 @@ public class POOCasino{
 		gameEnd(n-1);
 	}
 	public static void gameStart(){
-		System.out.println("POOCasino Jacks or better, written by b02902009 Yu-Wei Huang");
+		Art.title();
+		Art.move(36,11);
+		System.out.println("written by b02902009 Yu-Wei Huang");
+		Art.move(1,13);
 		System.out.print("Please enter your name: ");
+		Art.input(15);
 		name = Player.getName();
-		System.out.println("Welcome, "+name+".");
+		Art.color(1,37,40);
+		Art.move(1,13);
+		Art.clear();
+		System.out.println("Welcome, "+(Setting.art?"\033[33m":"")+name+(Setting.art?"\033[37m":"")+".");
 		Computer.initP();
 		Computer.initDeck();
 	}
 	public static boolean round(int n){
-		System.out.println("You have "+Computer.getP()+" P-dollars now.");
+		Art.move(1,14);
+		Art.clear();
+		System.out.println("You have "+(Setting.art?"\033[31m":"")+Computer.getP()+(Setting.art?"\033[37m":"")+" P-dollars now.");
 		Computer.shuffleDeck();
 		int bet = Player.getBet(n);
 		if(bet == 0)return false;
 		Card[] desk = Computer.finalDesk(Player.chooseCard(Computer.initDesk()));
 		Player.result(desk, Computer.bestHand(), bet);
+		Art.pressContinue();
 		return true;
 		}
 	public static void gameEnd(int n){
-		System.out.println("Good bye, "+name+". You played for "+n+" round"+((n>1)?"s":"")+" and have "+Computer.getP()+" P-dollars now.");
+		Art.move(1,13);
+		Art.clear();
+		System.out.println("Good bye, "+(Setting.art?"\033[33m":"")+name+(Setting.art?"\033[37m":"")+". You played for "+n+" round"+((n>1)?"s":"")+" and have "+(Setting.art?"\033[31m":"")+Computer.getP()+(Setting.art?"\033[37m":"")+" P-dollars now.");
+		Art.color(0,37,40);
 	}
 }
 
@@ -53,7 +147,10 @@ class Player{
 		Scanner scanner = new Scanner(System.in);
 		int tmp=-1;
 		while(true){
+			Art.move(1,15);
+			Art.color(1,37,40);
 			System.out.print("Please enter your P-dollar bet for round "+n+" (1-5 or 0 for quitting the game): ");
+			Art.input(2);
 			try{
 				tmp = Integer.parseInt(scanner.nextLine());
 				if(tmp<6&&tmp>-1)break;
@@ -61,6 +158,7 @@ class Player{
 				continue;
 			}
 		}
+		Art.color(1,37,40);
 		return tmp;
 	}
 	public static int[] chooseCard(Card[] desk){
@@ -72,11 +170,12 @@ class Player{
 		for (int i=0 ; i<5 ; i++)
 			tmp[i] = true;
 		String stmp;
-
+		Art.move(1,17);
 		System.out.print("Your cards are");
 		for (int i=0 ; i<5 ; i++)
 			System.out.print(" ("+(char)('a'+i)+") "+desk[i].printCard());
 		System.out.print("\nWhich cards do you want to keep? ");
+		Art.input(6);
 		stmp = scanner.nextLine();
 		for (int i=0 ; i<stmp.length() ; i++){
 			int c = (int)(stmp.charAt(i)-'a');
@@ -89,7 +188,9 @@ class Player{
 			}
 		}
 		ret = new int[n];
+		Art.color(1,37,40);
 		System.out.print("Okay. I will discard");
+		if(n==5)System.out.print(" nothing.");
 		for (int i=0 ; i<5 ; i++){
 			if(tmp[i]){
 				System.out.print(" ("+(char)('a'+i)+") "+desk[i].printCard());
@@ -107,7 +208,10 @@ class Player{
 		System.out.print("Your new cards are");
 		for (int i=0 ; i<5 ; i++)
 			System.out.print(" "+desk[i].printCard());
-		System.out.println("\nYou get a "+hands[hand]+" hand. The payoff is "+payoff[bet-1][hand]);
+		if(Setting.art)
+			System.out.println("\nYou get a "+Art.hands[hand]+" hand. The payoff is "+payoff[bet-1][hand]);
+		else
+			System.out.println("\nYou get a "+hands[hand]+" hand. The payoff is "+payoff[bet-1][hand]);
 	}
 }
 
@@ -209,7 +313,11 @@ class Card{
 	public Card(int s, int r){
 		suit = s; rank = r;
 	}
-	public String printCard(){return suits[suit]+ranks[rank];}
+	public String printCard(){
+		if(Setting.art)
+			return Art.suits[suit]+ranks[rank]+"\033[1;37;40m";
+		return suits[suit]+ranks[rank];
+	}
 	public int getSuit(){return suit;}
 	public int getRank(){return rank;}
 	public static int compareCards(Card s1, Card s2){
