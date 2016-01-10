@@ -54,17 +54,25 @@ public class POOCasino{
 			playRound(player, chips, last_table, i);
 		}
 	}
-	public static void playRound(Player[] player, int[] chips, ArrayList<Hand> last_table, int round){
-		double[] bet = {0, 0, 0, 0};
+	private static boolean Blackjack(Card a, Card b){
+		if(a.getValue()==1 && b.getValue() >= 10)return true;
+		if(b.getValue()==1 && a.getValue() >= 10)return true;
+		return false;
+	}
+	private static void playRound(Player[] player, int[] chips, ArrayList<Hand> last_table, int round){
+		int[] bet = {0, 0, 0, 0};
+		boolean[] insurance = {false, false, false, false};
+		boolean[] surrender = {false, false, false, false};
 		Hand[] face_up = new Hand[5];	//0~3: player, 4: dealer
 		Hand[] face_down = new Hand[5];
+
 		// (1) make a bet
 		for(int i = 0 ; i < 4 ; i++){
-			if(player[i] == null)continue;
+			if(player[i] == null || surrender[i])continue;
 			try{
 				bet[i] = player[i].make_bet(last_table, total_player, i);
-				if(bet[i] <= 0){
-					System.out.println("Round "+round+"\tPlayer"+(i+1)+" bet <=0 chips and is out of the game.");
+				if(bet[i] < 1){
+					System.out.println("Round "+round+"\tPlayer"+(i+1)+" bet <1 chips and is out of the game.");
 					player[i] = null;
 					continue;
 				}
@@ -73,9 +81,8 @@ public class POOCasino{
 				System.out.println("Round "+round+"\tPlayer"+(i+1)+" bet "+bet[i]+" chips.");
 			}
 			catch(Player.NegativeException e){
-				System.out.println("Round "+round+"\tPlayer"+(i+1)+" bet <=0 chips and is out of the game.");
-				player[i] = null;
-				continue;
+				System.out.println("ERROR: Player"+(i+1)+" tries to decrease negative number of chips.");
+				System.exit(1);
 			}
 			catch(Player.BrokeException e){
 				System.out.println("Round "+round+"\tPlayer"+(i+1)+" is broke and out of the game.");
@@ -86,6 +93,7 @@ public class POOCasino{
 				player[i] = null;
 			}
 		}
+
 		// (2) assign cards to player and dealer
 		ArrayList<Card> deck = new ArrayList<Card>();
 		ArrayList<Hand> current_table = new ArrayList<Hand>();
@@ -100,29 +108,29 @@ public class POOCasino{
 		for(int i = 0 ; i < 52 ; i++)
 			System.out.println(deck.get(i).getSuit()+" "+deck.get(i).getValue());
 		for(int i = 0 ; i < 5 ; i++){
-			if(i != 4 && player[i] == null)continue;
+			if(i != 4 && (player[i] == null || surrender[i]))continue;
 			face_up[i] = new Hand(new ArrayList<Card>(deck.subList(cardn++, cardn)));
 			face_down[i] = new Hand(new ArrayList<Card>(deck.subList(cardn++, cardn)));
 			if(i != 4) current_table.add(face_up[i]);
 			//System.out.println(face_up[i].getCards().get(0).getValue());
 		}
+
 		// (3) if dealer's faceup is ACE, ask each player whether to buy insurance of 0.5 bet
-		boolean[] insurance = {false, false, false, false};
 		if(face_up[4].getCards().get(0).getValue() == 1){
+			System.out.println("Round "+round+"\tDealer's face-up card is ACE.");
 			for(int i = 0 ; i < 4 ; i++){
-				if(player[i] == null)continue;
+				if(player[i] == null || surrender[i])continue;
 				current_table.remove(current_table.indexOf(face_up[i]));
 				if(player[i].buy_insurance(face_up[i].getCards().get(0), face_up[4].getCards().get(0), current_table)){
 					insurance[i] = true;
 					try{
 						player[i].decrease_chips((double)(0.5*bet[i]));
 						chips[i]-= 0.5*bet[i];
-						System.out.println("Round "+round+"\tPlayer"+(i+1)+" bought insurance ("+(0.5*bet[i])+" chips).");
+						System.out.println("Round "+round+"\tPlayer"+(i+1)+" bought insurance (cost"+(0.5*bet[i])+" chips).");
 					}
 					catch(Player.NegativeException e){
-						System.out.println("Round "+round+"\tPlayer"+(i+1)+" bought insurance using <=0 chips and is out of the game.");
-						player[i] = null;
-						continue;
+						System.out.println("ERROR: Player"+(i+1)+" tries to decrease negative number of chips.");
+						System.exit(1);
 					}
 					catch(Player.BrokeException e){
 						System.out.println("Round "+round+"\tPlayer"+(i+1)+" is broke and out of the game.");
@@ -137,6 +145,34 @@ public class POOCasino{
 				current_table.add(face_up[i]);
 			}
 		}
+
+		// (4) if dealer got a Blackjack, ask each player whether to surrender
+		if(Blackjack(face_up[4].getCards().get(0), face_down[4].getCards().get(0))){
+			System.out.println("Round "+round+"\tDealer Blackjack.");
+			for(int i = 0 ; i < 4 ; i++){
+				if(player[i] == null || surrender[i])continue;
+				current_table.remove(current_table.indexOf(face_up[i]));
+				if(player[i].do_surrender(face_up[i].getCards().get(0), face_up[4].getCards().get(0), current_table)){
+					surrender[i] = true;
+					try{
+						player[i].increase_chips((double)(0.5*bet[i]));
+						chips[i]+= 0.5*bet[i];
+						System.out.println("Round "+round+"\tPlayer"+(i+1)+" surrendered (got "+(0.5*bet[i])+" chips back).");
+					}
+					catch(Player.NegativeException e){
+						System.out.println("ERROR: Player"+(i+1)+" tries to increase negative number of chips.");
+						System.exit(1);
+					}
+					if(chips[i] < 0){
+						System.out.println("Round "+round+"\tPlayer"+(i+1)+" is broke and out of the game.");
+						chips[i] = 0;
+					}
+				}
+				else System.out.println("Round "+round+"\tPlayer"+(i+1)+" didn't surrender.");
+				current_table.add(face_up[i]);
+			}
+		}
+
 	}
 }
 
