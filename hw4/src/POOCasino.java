@@ -52,7 +52,14 @@ public class POOCasino{
 		total_player = 4;
 		for(i = 0 ; i < round ; i++){
 			playRound(player, chips, last_table, i);
+			System.out.println("Remaining chips: "+chips[0]+", "+chips[1]+", "+chips[2]+", "+chips[3]);
 		}
+	}
+	private static boolean Blackjack(Hand h){
+		if(h.getCards().size() != 2)return false;
+		if(h.getCards().get(0).getValue()==1 && h.getCards().get(1).getValue() >= 10)return true;
+		if(h.getCards().get(1).getValue()==1 && h.getCards().get(0).getValue() >= 10)return true;
+		return false;
 	}
 	private static boolean Blackjack(Card a, Card b){
 		if(a.getValue()==1 && b.getValue() >= 10)return true;
@@ -100,7 +107,7 @@ public class POOCasino{
 		return false;
 	}
 	private static void playRound(Player[] player, int[] chips, ArrayList<Hand> last_table, int round){
-		int[] bet = {0, 0, 0, 0};
+		int[] bet = {0, 0, 0, 0, 0, 0, 0, 0, 0};
 		boolean[] insurance = {false, false, false, false};
 		boolean[] surrender = {false, false, false, false};
 		boolean[] split = {false, false, false, false};
@@ -114,8 +121,9 @@ public class POOCasino{
 			try{
 				bet[i] = player[i].make_bet(last_table, total_player, i);
 				if(bet[i] < 1){
-					System.out.println("Round "+round+"\tPlayer"+(i+1)+"\tbet <1 chips and is out of the game.");
+					System.out.println("Round "+round+"  \tPlayer"+(i+1)+"  \tbet <1 chips and is out of the game.");
 					player[i] = null;
+					chips[i] = 0;
 					continue;
 				}
 				player[i].decrease_chips(bet[i]);
@@ -129,10 +137,11 @@ public class POOCasino{
 				player[i] = null;
 			}
 			if(chips[i] < 0 || player[i] == null){
-				System.out.println("Round "+round+"\tPlayer"+(i+1)+"\tis broke while making bet and out of the game.");
+				System.out.println("Round "+round+"  \tPlayer"+(i+1)+"  \tis broke while making bet and out of the game.");
 				player[i] = null;
+				chips[i] = 0;
 			}
-			else System.out.println("Round "+round+"\tPlayer"+(i+1)+"\tbet "+bet[i]+" chips.");
+			else System.out.println("Round "+round+"  \tPlayer"+(i+1)+"  \tbet "+bet[i]+" chips.");
 		}
 
 		// (2) assign cards to player and dealer
@@ -146,19 +155,19 @@ public class POOCasino{
 			//System.out.println(tmp.getSuit()+ " "+ tmp.getValue());
 		}
 		Collections.shuffle(deck);
-		for(int i = 0 ; i < 52 ; i++)
-			System.out.println(deck.get(i).getSuit()+" "+deck.get(i).getValue());
+		//for(int i = 0 ; i < 52 ; i++)
+		//	System.out.println(deck.get(i).getSuit()+" "+deck.get(i).getValue());
 		for(int i = 0 ; i < 5 ; i++){
 			if(i != 4 && (player[i] == null || surrender[i]))continue;
 			face_up[i] = new Hand(new ArrayList<Card>(deck.subList(cardn++, cardn)));
 			face_down[i] = new Hand(new ArrayList<Card>(deck.subList(cardn++, cardn)));
 			if(i != 4) current_table.add(face_up[i]);
-			//System.out.println(face_up[i].getCards().get(0).getValue());
+			System.out.println(i+"\t"+face_up[i].getCards().get(0).getValue()+"\t"+face_down[i].getCards().get(0).getValue());
 		}
 
 		// (3) if dealer's faceup is ACE, ask each player whether to buy insurance of 0.5 bet
 		if(face_up[4].getCards().get(0).getValue() == 1){
-			System.out.println("Round "+round+"\tDealer's face-up card is ACE.");
+			System.out.println("Round "+round+"  \tDealer's face-up card is ACE.");
 			for(int i = 0 ; i < 4 ; i++){
 				if(player[i] == null || surrender[i])continue;
 				current_table.remove(current_table.indexOf(face_up[i]));
@@ -176,19 +185,20 @@ public class POOCasino{
 						player[i] = null;
 					}
 					if(chips[i] < 0 || player[i] == null){
-						System.out.println("Round "+round+"\tPlayer"+(i+1)+"\tis broke while buying insurance and out of the game.");
+						System.out.println("Round "+round+"  \tPlayer"+(i+1)+"  \tis broke while buying insurance and out of the game.");
 						player[i] = null;
+						chips[i] = 0;
 					}
-					else System.out.println("Round "+round+"\tPlayer"+(i+1)+"\tbought insurance (cost "+(0.5*bet[i])+" chips).");
+					else System.out.println("Round "+round+"  \tPlayer"+(i+1)+"  \tbought insurance (cost "+(0.5*bet[i])+" chips).");
 				}
-				else System.out.println("Round "+round+"\tPlayer"+(i+1)+"\tdidn't buy insurance.");
+				else System.out.println("Round "+round+"  \tPlayer"+(i+1)+"  \tdidn't buy insurance.");
 				current_table.add(face_up[i]);
 			}
 		}
 
 		// (4) if dealer got a Blackjack, ask each player whether to surrender
 		if(Blackjack(face_up[4].getCards().get(0), face_down[4].getCards().get(0))){
-			System.out.println("Round "+round+"\tDealer Blackjack.");
+			System.out.println("Round "+round+"  \tDealer Blackjack.");
 			for(int i = 0 ; i < 4 ; i++){
 				if(player[i] == null || surrender[i])continue;
 				current_table.remove(current_table.indexOf(face_up[i]));
@@ -203,12 +213,13 @@ public class POOCasino{
 						System.exit(1);
 					}
 					if(chips[i] < 0){
-						System.out.println("Round "+round+"\tPlayer"+(i+1)+"\tis broke during surrender and out of the game.");
+						System.out.println("Round "+round+"  \tPlayer"+(i+1)+"  \tis broke during surrender and out of the game.");
 						player[i] = null;
+						chips[i] = 0;
 					}
-					else System.out.println("Round "+round+"\tPlayer"+(i+1)+"\tsurrendered (got "+(0.5*bet[i])+" chips back).");
+					else System.out.println("Round "+round+"  \tPlayer"+(i+1)+"  \tresult: surrendered (lost "+(0.5*bet[i])+" chips).");
 				}
-				else System.out.println("Round "+round+"\tPlayer"+(i+1)+"\tdidn't surrender.");
+				else System.out.println("Round "+round+"  \tPlayer"+(i+1)+"  \tdidn't surrender.");
 				current_table.add(face_up[i]);
 			}
 		}
@@ -237,17 +248,19 @@ public class POOCasino{
 						player[i] = null;
 					}
 					if(chips[i] < 0 || player[i] == null){
-						System.out.println("Round "+round+"\tPlayer"+(i+1)+"\tis broke during surrender and out of the game.");
+						System.out.println("Round "+round+"  \tPlayer"+(i+1)+"  \tis broke during split and out of the game.");
 						player[i] = null;
+						chips[i] = 0;
 					}
 					else{
 						split[i] = true;
+						bet[i+5] = bet[i];
 						face_up[i+5] = new Hand(new ArrayList<Card>(face_up[i].getCards().subList(0, 1)));
 						face_up[i] = new Hand(new ArrayList<Card>(face_up[i].getCards().subList(1, 2)));
-						System.out.println("Round "+round+"\tPlayer"+(i+1)+"\tsplit (cost "+(bet[i])+" chips).");
+						System.out.println("Round "+round+"  \tPlayer"+(i+1)+"  \tsplit (cost "+(bet[i])+" chips).");
 					}
 				}
-				else System.out.println("Round "+round+"\tPlayer"+(i+1)+"\tdidn't split.");
+				else System.out.println("Round "+round+"  \tPlayer"+(i+1)+"  \tdidn't split.");
 				current_table.add(face_up[i]);
 				if(split[i])current_table.add(face_up[i+5]);
 			}
@@ -272,17 +285,18 @@ public class POOCasino{
 					player[p] = null;
 				}
 				if(chips[p] < 0 || player[p] == null){
-					System.out.println("Round "+round+"\tPlayer"+(p+1)+"\tis broke during double down and out of the game.");
+					System.out.println("Round "+round+"  \tPlayer"+(p+1)+"  \tis broke during double down and out of the game.");
 					player[p] = null;
+					chips[p] = 0;
 				}
 				else{
 					stand[i] = true;
 					face_up[p] = addCard(face_up[i], deck.get(cardn++));
-					System.out.println("Round "+round+"\tPlayer"+(p+1)+h+"\tdoubled down (cost "+(bet[p])+" chips).");
-					bet[p]*= 2;
+					System.out.println("Round "+round+"  \tPlayer"+(p+1)+h+"  \tdoubled down (cost "+(bet[p])+" chips).");
+					bet[i]*= 2;
 				}
 			}
-			else System.out.println("Round "+round+"\tPlayer"+(p+1)+h+"\tdidn't double down.");
+			//else System.out.println("Round "+round+"  \tPlayer"+(p+1)+h+"  \tdidn't double down.");
 			int hit = 0;
 			while(!stand[i]){
 				if(player[p].hit_me(face_up[i], face_up[4].getCards().get(0), current_table)){
@@ -292,7 +306,7 @@ public class POOCasino{
 				}
 				else stand[i] = true;
 			}
-			System.out.println("Round "+round+"\tPlayer"+(p+1)+h+"\thit "+hit+" times and then "+(stand[i]?"stand.":"busted."));
+			System.out.println("Round "+round+"  \tPlayer"+(p+1)+h+"  \thit "+hit+" times and then "+(stand[i]?"stand.":"busted."));
 			current_table.add(face_up[i]);
 		}
 
@@ -304,7 +318,71 @@ public class POOCasino{
 			hit++;
 		}
 		if(!busted(face_up[4]))stand[4] = true;
-		System.out.println("Round "+round+"\tDealer\thit "+hit+" times and then "+(stand[4]?"stand.":"busted."));
+		if(!Blackjack(face_up[4]))System.out.println("Round "+round+"  \tDealer  \thit "+hit+" times and then "+(stand[4]?"stand.":"busted."));
+		for(int j = 0 ; j < face_up[4].getCards().size() ; j++)
+			System.out.println(4+"\t"+face_up[4].getCards().get(j).getValue());
+
+		// (7) compare results
+		int dealerT = total(face_up[4]);
+		double offset = 0;
+		for(int i = 0 ; i < 9 ; i++){
+			if(i == 4)continue;	//dealer
+			int p = (i>4)?i-5:i;
+			String h = (i>4)?"-2":"";
+			if(player[p] == null || surrender[p])continue;	//broke or surrendered
+			if(i > 4 && !split[p])continue;	//player p didn't split
+			int T = total(face_up[i]);
+			if(!stand[i]){	//player p busted
+				System.out.println("Round "+round+"  \tPlayer"+(p+1)+h+"  \tresult: busted, lost bet chips.");
+				offset = 0;
+			}
+			else if(Blackjack(face_up[i])){
+				if(Blackjack(face_up[4])){
+					System.out.println("Round "+round+"  \tPlayer"+(p+1)+h+"  \tresult: Blackjack push, got bet chips back.");
+					offset = bet[i];
+				}
+				else{
+					System.out.println("round "+round+"  \tplayer"+(p+1)+h+"  \tresult: Blackjack, got extra 1.5 bet chips ("+(1.5*bet[i])+"chips).");
+					offset = (double)2.5*bet[i];
+				}
+			}
+			else if(!stand[4]){	//dealer busted
+				offset = 2*bet[i];
+			}
+			else if(Blackjack(face_up[4])){
+				if(insurance[p]){
+					System.out.println("Round "+round+"  \tPlayer"+(p+1)+h+"  \tresult: dealer Blackjack (with insurance), got bet chips back.");
+					offset = bet[i];
+				}
+				else{
+					System.out.println("Round "+round+"  \tPlayer"+(p+1)+h+"  \tresult: dealer Blackjack (without insurance), lost bet chips.");
+					offset = 0;
+				}	
+			}
+			else if(dealerT > T){
+				System.out.println("Round "+round+"  \tPlayer"+(p+1)+h+"  \tresult: dealer won, lost bet chips.");
+				offset = 0;
+			}
+			else if(dealerT < T){
+				System.out.println("round "+round+"  \tplayer"+(p+1)+h+"  \tresult: Blackjack, got extra 1 bet chips ("+(bet[i])+"chips).");
+				offset = (double)2*bet[i];
+			}
+			else{
+				System.out.println("Round "+round+"  \tPlayer"+(p+1)+h+"  \tresult: push, got bet chips back.");
+				offset = bet[i];
+			}
+			if(offset > 0) try{
+				player[p].increase_chips(offset);
+				chips[i]+= offset;
+			}
+			catch(Player.NegativeException e){
+				System.out.println("ERROR: Player"+(i+1)+" tries to increase negative number of chips.");
+				System.exit(1);
+			}
+			for(int j = 0 ; j < face_up[i].getCards().size() ; j++)
+				System.out.println(i+"\t"+face_up[i].getCards().get(j).getValue());
+		}
+
 	}
 }
 
