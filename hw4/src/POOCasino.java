@@ -95,10 +95,10 @@ public class POOCasino{
 			else total+= h.getCards().get(i).getValue();
 		}
 		while(aces > 0){
-			if(total > 12)return total;
+			if(total > 11)return total;
 			else{
 				aces--;
-				total+= 9;
+				total+= 10;
 			}
 		}
 		return total;
@@ -224,7 +224,7 @@ public class POOCasino{
 						player[i] = null;
 						chips[i] = 0;
 					}
-					else System.out.println("Round "+round+"  \tPlayer"+(i+1)+"  \tresult: surrendered (lost "+(0.5*bet[i])+" chips).");
+					else System.out.println("Round "+round+"  \tPlayer"+(i+1)+"  \tresult: surrendered              \t(-"+(0.5*bet[i])+" chips).");
 				}
 				else System.out.println("Round "+round+"  \tPlayer"+(i+1)+"  \tdidn't surrender.");
 				current_table.add(face_up[i]);
@@ -298,8 +298,9 @@ public class POOCasino{
 					continue;
 				}
 				else{
-					stand[i] = true;
-					face_up[p] = addCard(face_up[i], deck.get(cardn++));
+					face_up[i] = addCard(face_up[i], deck.get(cardn++));
+					if(!busted(face_up[i]))
+						stand[i] = true;
 					System.out.println("Round "+round+"  \tPlayer"+(p+1)+h+"  \tdoubled down (cost "+(bet[p])+" chips).");
 					bet[i]*= 2;
 					current_table.add(face_up[i]);
@@ -308,7 +309,7 @@ public class POOCasino{
 			}
 			//else System.out.println("Round "+round+"  \tPlayer"+(p+1)+h+"  \tdidn't double down.");
 			int hit = 0;
-			while(!stand[i]){
+			while(!stand[i]&&!busted(face_up[i])){
 				if(player[p].hit_me(face_up[i], face_up[4].getCards().get(0), current_table)){
 					hit++;
 					face_up[i] = addCard(face_up[i], deck.get(cardn++));
@@ -330,7 +331,7 @@ public class POOCasino{
 		if(!busted(face_up[4]))stand[4] = true;
 		if(!Blackjack(face_up[4]))System.out.println("Round "+round+"  \tDealer  \thit "+hit+" times and then "+(stand[4]?"stand.":"busted."));
 		for(int j = 0 ; j < face_up[4].getCards().size() ; j++)
-			System.out.println(4+"\t"+face_up[4].getCards().get(j).getValue());
+			System.out.println("Dealer "+"\t"+face_up[4].getCards().get(j).getValue());
 
 		// (7) compare results
 		last_table = new ArrayList<Hand>();
@@ -346,7 +347,7 @@ public class POOCasino{
 			last_table.add(face_up[i]);
 			int T = total(face_up[i]);
 			if(!stand[i]){	//player p busted
-				System.out.println("Round "+round+"  \tPlayer"+(p+1)+h+"  \tresult: busted, lost bet chips.");
+				System.out.println("Round "+round+"  \tPlayer"+(p+1)+h+"  \tresult: busted, lost bet chips \t(-"+bet[i]+" chips).");
 				offset = 0;
 			}
 			else if(Blackjack(face_up[i])){
@@ -355,12 +356,12 @@ public class POOCasino{
 					offset = bet[i];
 				}
 				else{
-					System.out.println("round "+round+"  \tPlayer"+(p+1)+h+"  \tresult: Blackjack, got extra 1.5 bet chips ("+(1.5*bet[i])+" chips).");
+					System.out.println("Round "+round+"  \tPlayer"+(p+1)+h+"  \tresult: Blackjack, got 1.5 bet chips \t(+"+(1.5*bet[i])+" chips).");
 					offset = (double)2.5*bet[i];
 				}
 			}
 			else if(!stand[4]){	//dealer busted
-				System.out.println("round "+round+"  \tPlayer"+(p+1)+h+"  \tresult: dealer busted, got extra 1 bet chips ("+(bet[i])+" chips).");
+				System.out.println("Round "+round+"  \tPlayer"+(p+1)+h+"  \tresult: dealer busted, got 1 bet chips \t(+"+(bet[i])+" chips).");
 				offset = 2*bet[i];
 			}
 			else if(Blackjack(face_up[4])){
@@ -369,16 +370,16 @@ public class POOCasino{
 					offset = bet[i];
 				}
 				else{
-					System.out.println("Round "+round+"  \tPlayer"+(p+1)+h+"  \tresult: dealer Blackjack (without insurance), lost bet chips.");
+					System.out.println("Round "+round+"  \tPlayer"+(p+1)+h+"  \tresult: dealer Blackjack,lost bet chips\t(-"+bet[i]+" chips).");
 					offset = 0;
 				}	
 			}
 			else if(dealerT > T){
-				System.out.println("Round "+round+"  \tPlayer"+(p+1)+h+"  \tresult: dealer won, lost bet chips.");
+				System.out.println("Round "+round+"  \tPlayer"+(p+1)+h+"  \tresult: dealer won, lost bet chips \t(-"+bet[i]+" chips).");
 				offset = 0;
 			}
 			else if(dealerT < T){
-				System.out.println("round "+round+"  \tPlayer"+(p+1)+h+"  \tresult: won, got extra 1 bet chips ("+(bet[i])+" chips).");
+				System.out.println("Round "+round+"  \tPlayer"+(p+1)+h+"  \tresult: won, got extra 1 bet chips \t(+"+(bet[i])+" chips).");
 				offset = (double)2*bet[i];
 			}
 			else{
@@ -398,7 +399,7 @@ public class POOCasino{
 				player[p] = null;
 			}
 			for(int j = 0 ; j < face_up[i].getCards().size() ; j++)
-				System.out.println(i+"\t"+face_up[i].getCards().get(j).getValue());
+				System.out.println("Player"+(p+1)+h+"\t"+face_up[i].getCards().get(j).getValue());
 		}
 		return last_table;
 	}
