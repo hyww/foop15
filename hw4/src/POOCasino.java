@@ -170,7 +170,7 @@ public class POOCasino{
 			face_up[i] = new Hand(new ArrayList<Card>(deck.subList(cardn++, cardn)));
 			face_down[i] = new Hand(new ArrayList<Card>(deck.subList(cardn++, cardn)));
 			if(i != 4) current_table.add(face_up[i]);
-			System.out.println(i+"\t"+face_up[i].getCards().get(0).getValue()+"\t"+face_down[i].getCards().get(0).getValue());
+			System.out.println("Round "+round+"  \t"+(i==4?"Dealer":("Player"+(i+1)))+"  \thas cards "+face_up[i].getCards().get(0).getValue()+"(face-up) and "+face_down[i].getCards().get(0).getValue());
 		}
 
 		// (3) if dealer's faceup is ACE, ask each player whether to buy insurance of 0.5 bet
@@ -331,7 +331,7 @@ public class POOCasino{
 		if(!busted(face_up[4]))stand[4] = true;
 		if(!Blackjack(face_up[4]))System.out.println("Round "+round+"  \tDealer  \thit "+hit+" times and then "+(stand[4]?"stand.":"busted."));
 		for(int j = 0 ; j < face_up[4].getCards().size() ; j++)
-			System.out.println("Dealer "+"\t"+face_up[4].getCards().get(j).getValue());
+			System.out.println("Round "+round+"  \tDealer  \thas card "+face_up[4].getCards().get(j).getValue());
 
 		// (7) compare results
 		last_table = new ArrayList<Hand>();
@@ -347,7 +347,7 @@ public class POOCasino{
 			last_table.add(face_up[i]);
 			int T = total(face_up[i]);
 			if(!stand[i]){	//player p busted
-				System.out.println("Round "+round+"  \tPlayer"+(p+1)+h+"  \tresult: busted, lost bet chips \t(-"+bet[i]+" chips).");
+				System.out.println("Round "+round+"  \tPlayer"+(p+1)+h+"  \tresult: busted, lost bet chips   \t(-"+bet[i]+" chips).");
 				offset = 0;
 			}
 			else if(Blackjack(face_up[i])){
@@ -399,7 +399,7 @@ public class POOCasino{
 				player[p] = null;
 			}
 			for(int j = 0 ; j < face_up[i].getCards().size() ; j++)
-				System.out.println("Player"+(p+1)+h+"\t"+face_up[i].getCards().get(j).getValue());
+				System.out.println("Round "+round+"  \tPlayer"+(p+1)+h+"  \thas card "+face_up[i].getCards().get(j).getValue());
 		}
 		return last_table;
 	}
