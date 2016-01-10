@@ -1,6 +1,6 @@
 import java.lang.*;
 import java.lang.reflect.Constructor;
-import java.util.ArrayList;
+import java.util.*;
 import foop.*;
 
 public class POOCasino{
@@ -56,15 +56,15 @@ public class POOCasino{
 	}
 	public static void playRound(Player[] player, int[] chips, ArrayList<Hand> last_table, int round){
 		int[] bets = {0, 0, 0, 0};
-		Hand dealer;
-		Hand[] hands = new Hand[4];
+		Hand[] face_up = new Hand[5];	//0~3: player, 4: dealer
+		Hand[] face_down = new Hand[5];
 		// (1) make a bet
 		for(int i = 0 ; i < 4 ; i++){
 			if(player[i] == null)continue;
 			try{
 				bets[i] = player[i].make_bet(last_table, total_player, i);
 				if(bets[i] <= 0){
-					System.out.println("Round "+round+"\tPlayer"+(i+1)+" bets <0 chips and is out of the game.");
+					System.out.println("Round "+round+"\tPlayer"+(i+1)+" bets <1 chips and is out of the game.");
 					player[i] = null;
 					continue;
 				}
@@ -73,7 +73,7 @@ public class POOCasino{
 				System.out.println("Round "+round+"\tPlayer"+(i+1)+" bets "+bets[i]+" chips.");
 			}
 			catch(Player.BrokeException e){
-				System.out.println("Round "+round+"\tPlayer"+(i+1)+" bets <0 chips and is out of the game.");
+				System.out.println("Round "+round+"\tPlayer"+(i+1)+" bets <1 chips and is out of the game.");
 				player[i] = null;
 				continue;
 			}
@@ -86,7 +86,24 @@ public class POOCasino{
 				chips[i] = 0;
 			}
 		}
-		// (2) assign card to player and dealer
+		// (2) assign cards to player and dealer
+		ArrayList<Card> deck = new ArrayList<Card>();
+		Card tmp;
+		int cardn = 0;
+		for(int i = 0 ; i < 52 ; i++){
+			tmp = new Card((byte)(i/13+1), (byte)(i%13+1));
+			deck.add(tmp);
+			//System.out.println(tmp.getSuit()+ " "+ tmp.getValue());
+		}
+		Collections.shuffle(deck);
+		for(int i = 0 ; i < 52 ; i++)
+			System.out.println(deck.get(i).getSuit()+" "+deck.get(i).getValue());
+		for(int i = 0 ; i < 5 ; i++){
+			if(i != 4 && player[i] == null)continue;
+			face_up[i] = new Hand(new ArrayList<Card>(deck.subList(cardn++, cardn)));
+			face_down[i] = new Hand(new ArrayList<Card>(deck.subList(cardn++, cardn)));
+			//System.out.println(face_up[i].getCards().get(0).getValue());
+		}
 	}
 }
 
