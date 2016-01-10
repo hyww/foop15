@@ -69,8 +69,8 @@ class PlayerB02902009 extends Player{
 	}
 	@Override
 	public boolean do_surrender(Card my_open, Card dealer_open, java.util.ArrayList<Hand> current_table){
-		if(my_open.getValue() == 1)return false;
-		return true;
+		if(dealer_open.getValue() == 1 && my_open.getValue() != 1)return true;
+		return false;
 	}
 	@Override
 	public boolean hit_me(Hand my_open, Card dealer_open, java.util.ArrayList<Hand> current_table){
@@ -122,6 +122,6 @@ class PlayerB02902009 extends Player{
 	}
 	@Override
 	public java.lang.String toString(){
-		return "";
+		return "Player name = PlayerB02902009, current chips = "+String.valueOf(get_chips());
 	}
 }

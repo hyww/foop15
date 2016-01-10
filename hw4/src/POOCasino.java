@@ -55,6 +55,7 @@ public class POOCasino{
 			System.out.println("Remaining chips: "+chips[0]+", "+chips[1]+", "+chips[2]+", "+chips[3]);
 			total_player = 0;
 			for(int j = 0 ; j < 4 ; j++){
+				//if(player[j] != null && Double.parseDouble(player[j].toString())!= chips[j])System.out.println("Player "+j+" "+player[j]+" "+chips[j]);
 				if(player[j] != null)total_player++;
 			}
 		}
@@ -203,9 +204,8 @@ public class POOCasino{
 			}
 		}
 
-		// (4) if dealer got a Blackjack, ask each player whether to surrender
-		if(Blackjack(face_up[4].getCards().get(0), face_down[4].getCards().get(0))){
-			System.out.println("Round "+round+"  \tDealer Blackjack.");
+		// (4) if dealer didn't get a Blackjack, ask each player whether to surrender
+		if(!Blackjack(face_up[4].getCards().get(0), face_down[4].getCards().get(0))){
 			for(int i = 0 ; i < 4 ; i++){
 				if(player[i] == null || surrender[i])continue;
 				current_table.remove(current_table.indexOf(face_up[i]));
@@ -355,12 +355,12 @@ public class POOCasino{
 					offset = bet[i];
 				}
 				else{
-					System.out.println("round "+round+"  \tplayer"+(p+1)+h+"  \tresult: Blackjack, got extra 1.5 bet chips ("+(1.5*bet[i])+" chips).");
+					System.out.println("round "+round+"  \tPlayer"+(p+1)+h+"  \tresult: Blackjack, got extra 1.5 bet chips ("+(1.5*bet[i])+" chips).");
 					offset = (double)2.5*bet[i];
 				}
 			}
 			else if(!stand[4]){	//dealer busted
-				System.out.println("round "+round+"  \tplayer"+(p+1)+h+"  \tresult: dealer busted, got extra 1 bet chips ("+(bet[i])+" chips).");
+				System.out.println("round "+round+"  \tPlayer"+(p+1)+h+"  \tresult: dealer busted, got extra 1 bet chips ("+(bet[i])+" chips).");
 				offset = 2*bet[i];
 			}
 			else if(Blackjack(face_up[4])){
@@ -378,7 +378,7 @@ public class POOCasino{
 				offset = 0;
 			}
 			else if(dealerT < T){
-				System.out.println("round "+round+"  \tplayer"+(p+1)+h+"  \tresult: won, got extra 1 bet chips ("+(bet[i])+" chips).");
+				System.out.println("round "+round+"  \tPlayer"+(p+1)+h+"  \tresult: won, got extra 1 bet chips ("+(bet[i])+" chips).");
 				offset = (double)2*bet[i];
 			}
 			else{
