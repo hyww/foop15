@@ -59,11 +59,18 @@ public class POOCasino{
 		if(b.getValue()==1 && a.getValue() >= 10)return true;
 		return false;
 	}
+	private static Hand addCard(Hand h, Card c){
+		ArrayList<Card> tmp;
+		tmp = new ArrayList<Card>(h.getCards());
+		tmp.add(c);
+		return new Hand(tmp);
+	}
 	private static void playRound(Player[] player, int[] chips, ArrayList<Hand> last_table, int round){
 		int[] bet = {0, 0, 0, 0};
 		boolean[] insurance = {false, false, false, false};
 		boolean[] surrender = {false, false, false, false};
-		Hand[] face_up = new Hand[5];	//0~3: player, 4: dealer
+		boolean[] split = {false, false, false, false};
+		Hand[] face_up = new Hand[9];	//0~3: player, 4: dealer, 5~8: split player
 		Hand[] face_down = new Hand[5];
 
 		// (1) make a bet
@@ -138,7 +145,7 @@ public class POOCasino{
 					}
 					if(chips[i] < 0){
 						System.out.println("Round "+round+"\tPlayer"+(i+1)+" is broke and out of the game.");
-						chips[i] = 0;
+						player[i] = null;
 					}
 				}
 				else System.out.println("Round "+round+"\tPlayer"+(i+1)+" didn't buy insurance.");
@@ -172,7 +179,52 @@ public class POOCasino{
 				current_table.add(face_up[i]);
 			}
 		}
+		// (5) for each player who did not surrender: flip up, split?, double down?, hit until stand
+		current_table = new ArrayList<Hand>();
+		for(int i = 0 ; i < 4 ; i++){
+			if(player[i] == null || surrender[i])continue;
+			face_up[i] = addCard(face_up[i], face_down[i].getCards().get(0));
+			current_table.add(face_up[i]);
+		}
+		for(int i = 0 ; i < 4 ; i++){
+			if(player[i] == null || surrender[i])continue;
+			if(face_up[i].getCards().get(0).getValue() == face_up[i].getCards().get(1).getValue()){
+				current_table.remove(current_table.indexOf(face_up[i]));
+				if(player[i].do_split(face_up[i].getCards(), face_up[4].getCards().get(0), current_table)){
+					try{
+						player[i].decrease_chips(bet[i]);
+						chips[i]-= bet[i];
+					}
+					catch(Player.NegativeException e){
+						System.out.println("ERROR: Player"+(i+1)+" tries to decrease negative number of chips.");
+						System.exit(1);
+					}
+					catch(Player.BrokeException e){
+						System.out.println("Round "+round+"\tPlayer"+(i+1)+" is broke and out of the game.");
+						player[i] = null;
+					}
+					if(chips[i] < 0){
+						System.out.println("Round "+round+"\tPlayer"+(i+1)+" is broke and out of the game.");
+						player[i] = null;
+					}
+					else{
+						split[i] = true;
+						face_up[i+5] = new Hand(new ArrayList<Card>(face_up[i].getCards().subList(0, 1)));
+						face_up[i] = new Hand(new ArrayList<Card>(face_up[i].getCards().subList(1, 2)));
+						System.out.println("Round "+round+"\tPlayer"+(i+1)+" split (cost"+(bet[i])+" chips).");
+					}
+				}
+				else System.out.println("Round "+round+"\tPlayer"+(i+1)+" didn't split.");
+				current_table.add(face_up[i]);
+			}
+		}
+		for(int i = 0 ; i < 9 ; i++){
+			if(i == 4)continue;
+			int p = (i>4)?i-5:i;
+			if(player[p] == null || surrender[i])continue;
+			if(i > 4 && !split[p])continue;
 
+		}
 	}
 }
 
