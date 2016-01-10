@@ -7,6 +7,118 @@ class PlayerB02902009 extends Player{
 			}
 		}
 	}
+	private static int basic(java.util.ArrayList<Card> p, Card d_o, java.util.ArrayList<Hand> t){
+		int P = 2, D = 3, H = 5;
+		int d = d_o.getValue();
+		int a;
+		if(p.size() == 2 && p.get(0).getValue() == p.get(1).getValue()){
+			a = p.get(0).getValue();
+			if(a == 1){
+				if(d == 5 || d == 6)return P*D*H;
+				else return P*H;
+			}
+			else if(a == 2){
+				if(d >= 3 && d <= 7)return P*H;
+				else return H;
+			}
+			else if(a == 3){
+				if(d >= 4 && d <= 7)return P*H;
+				else return H;
+			}
+			else if(a == 4){
+				if(d >= 5 && d <= 6)return D*H;
+				else return H;
+			}
+			else if(a == 5){
+				if(d >= 10 || d == 1)return H;
+				else return D*H;
+			}
+			else if(a == 6){
+				if(d >= 7 || d == 1)return H;
+				else return P;
+			}
+			else if(a == 7){
+				if(d >= 10)return 1;
+				else if(d == 7)return P*H;
+				else if(d >= 8 || d == 1)return H;
+				else return P;
+			}
+			else if(a == 8){
+				if(d >= 2 && d <= 6)return P;
+				else return P*H;
+			}
+			else if(a == 9 ){
+				if(d == 7 || d >= 10 || d == 1)return 1;
+				else return P;
+			}
+			else{
+				return 1;
+			}
+		}
+		int total = 0;
+		int aces = 0;
+		int hard = 1;
+		for(int i = 0 ; i < p.size() ; i++){
+			int v = p.get(i).getValue();
+			if(v == 1){
+				aces++;
+				total+= 1;
+			}
+			else if(v > 10)total+= 10;
+			else total+= v;
+		}
+		while(aces > 0 && total < 12){
+			hard = 0;
+			aces--;
+			total+= 10;
+		}
+		if(hard == 1){
+			a = total;
+			if(a <= 7)return H;
+			else if(a == 8){
+				if(d == 5)return D*H;
+				else return H;
+			}
+			else if(a == 9){
+				if(d >= 2 && d <= 6)return D*H;
+				else return H;
+			}
+			else if(a == 10){
+				if(d >= 2 && d <= 9)return D*H;
+				else return H;
+			}
+			else if(a == 11){
+				return H;
+			} 
+			else if(a == 12){
+				if(d == 5 || d == 6)return 1;
+				else return H;
+			}
+			else if(a >= 13 && a <= 16){
+				if(d >= 7 || d == 1)return H;
+				else return 1;
+			}
+			else return 1;
+		}
+		else{
+			a = total - 10;
+			if(a >= 2 && a <= 5){
+				if(d >= 4 && d <= 6)return D*H;
+				else return H;
+			}
+			else if(a == 6){
+				if(d >= 2 && d <= 6)return D*H;
+				else return H;
+			}
+			else if(a == 7){
+				if(d >= 3 && d <= 6)return D;
+				else if(d == 2 || d == 7 || d == 8) return 1;
+				else return H;
+			}
+			else if(a == 8 && d == 6)return D;
+			else return 1;
+		}
+	}
 	private static int bet;
 	public PlayerB02902009(int chips){
 		super(chips);
@@ -17,101 +129,22 @@ class PlayerB02902009 extends Player{
 	}
 	@Override
 	public boolean do_double(Hand my_open, Card dealer_open, java.util.ArrayList<Hand> current_table){
-		if(get_chips()<bet+1)return false;
-		if(my_open.getCards().size() != 2)return false;
-		int a = my_open.getCards().get(0).getValue();
-		int b = my_open.getCards().get(1).getValue();
-		int tmp;
-		int d = dealer_open.getValue();
-		if(b == 1){
-			tmp = a;
-			a = b;
-			b = tmp;
-		}
-
-		//with ace
-		if(a == 1){
-			if(b >= 2 && b <= 7 && d >= 4 && d<= 6)return true;
-			if(b == 6 && d >= 2 && d <= 3)return true;
-			if(b == 7 && d == 3)return true;
-			if(b == 8 && d == 6)return true;
-			return false;
-		}
-
-		//with pair
-		if(a == b && b == 5 && d < 10 && d != 1)return true;
-		if(a == b && b == 4 &&(d == 5 || d == 6))return true;
-
-		// else
-		int t = a+b;	// hard total
-		if(t >= 9 && t <= 11 && d >= 2 && d <= 6)return true;
-		if(t >= 10 && t <= 11 && d >= 7 && d <= 9)return true;
-		if(t == 8 && d == 5)return true;
-		if(t == 11 && (d >= 10 || d == 1))return true;
+		if(basic(my_open.getCards(), dealer_open, current_table)%3 == 0)return true;
 		return false;
 	}
 	@Override
 	public boolean do_split(java.util.ArrayList<Card> my_open, Card dealer_open, java.util.ArrayList<Hand> current_table){
-		if(get_chips()<bet+1)return false;
-		if(my_open.size() != 2)return false;
-		int a = my_open.get(0).getValue();
-		int b = my_open.get(1).getValue();
-		int d = dealer_open.getValue();
-		if(a != b)return false;
-		if(a == 1)return true;
-		if(a == 2 && d >= 3 && d <= 8)return true;
-		if(a == 3 && d >= 4 && d <= 7)return true;
-		if(a == 8)return true; 
-		if(a >= 6 && a <= 9 && d >= 2 && d <= 6)return true;
-		if(a == 7 && d == 7)return true;
-		if(a == 9 &&(d == 8 || d == 9))return true;
+		if(basic(my_open, dealer_open, current_table)%2 == 0)return true;
 		return false;
 	}
 	@Override
 	public boolean do_surrender(Card my_open, Card dealer_open, java.util.ArrayList<Hand> current_table){
-		if(dealer_open.getValue() == 1 && my_open.getValue() != 1)return true;
+		//if(dealer_open.getValue() == 1 && my_open.getValue() != 1)return true;
 		return false;
 	}
 	@Override
 	public boolean hit_me(Hand my_open, Card dealer_open, java.util.ArrayList<Hand> current_table){
-			int d = dealer_open.getValue();
-		if(my_open.getCards().size() == 2){
-			int a = my_open.getCards().get(0).getValue();
-			int b = my_open.getCards().get(1).getValue();
-			int tmp;
-			if(b == 1){
-				tmp = a;
-				a = b;
-				b = tmp;
-			}
-
-			//with ace
-			if(a == 1){
-				if(b >= 2 && b <= 5 && (d >= 7 || d <= 3))return true;
-				if(b == 6 && (d >= 7 || d == 1))return true;
-				if(b == 7 && (d >= 9 || d == 1))return true;
-				return false;
-			}
-
-			//with pair
-			if(a == b){
-				if(b == 2 &&(d <= 2 || d >= 8))return true;
-				if(b == 3 &&(d <= 3 || d >= 8))return true;
-				if(b == 4 &&(d <= 4 || d >= 7))return true;
-				if(b == 5 &&(d == 1 || d >= 10))return true;
-				if(b == 6 &&(d == 1 || d >= 7))return true;
-				if(b == 7 &&(d == 8 || d == 9 || d == 1))return true;
-			}
-		}
-		int t = 0;	//hard total
-		for(int i = 0 ; i < my_open.getCards().size() ; i++){
-			if(my_open.getCards().get(i).getValue() > 10)t+= 10;
-			else t+= my_open.getCards().get(i).getValue();
-		}
-		if(t >= 5 && t <= 7)return true;
-		if(t == 8 && d != 5)return true;
-		if(t == 9 &&(d == 1 || d >= 7))return true;
-		if(t == 10 &&(d == 1 || d >= 10))return true;
+		if(basic(my_open.getCards(), dealer_open, current_table)%5 == 0)return true;
 		return false;
 	}
 	@Override
